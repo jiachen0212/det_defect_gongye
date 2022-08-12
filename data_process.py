@@ -1,6 +1,8 @@
 # coding=utf-8
 import os
 import numpy as np 
+import cv2
+import matplotlib.pyplot as plt
 
 
 def read_label():
@@ -22,37 +24,57 @@ def read_label():
     print(text)
 
 
+def index_times(xs, ys):
+    # 取第一条样本: event中记录各个灰度值, xs, ys中分别是像素坐标(有重复记录)
+    
+    index_times = np.zeros((800, 1000))
+    for i in range(xs.shape[0]):
+        if xs[i] >= 700:
+            xs[i] -= 700
+        index_times[ys[i]][xs[i]] += 1
 
-# 灰度区间: 2^12, 
-# HxW: 1280x800
+    # r, c = np.where(index_times == np.max(index_times))
+    # print(r, c)
+    # print(index_times[207][33])
+    # cv2.circle(index_times, (c[0], r[0]), 10, (255,255,0), 0)
+    # cv2.circle(index_times, (c[1], r[1]), 10, (255,255,0), 0)
+    # cv2.circle(index_times, (c[2], r[2]), 10, (255,255,0), 0)
+    # cv2.imwrite('./index_times.bmp', index_times)
+
+    return index_times
+
+
+def index_values(value, xs, ys):
+    index_value = np.zeros((800, 1000))
+    for i in range(xs.shape[0]):
+        if xs[i] >= 700:
+            xs[i] -= 700
+        index_value[ys[i]][xs[i]] += value[i]/16
+    
+    return index_value
+    
+
+def read_data(data_):
+    file = h5py.File(data_,"r") 
+    event_gs = np.array(file['events']['event_gs'])
+    t = np.array(file['events']['ts'])
+    x = np.array(file['events']['xs'])
+    y = np.array(file['events']['ys'])
+
+    return event_gs, t, x, y
+
 
 import h5py
 data_path = r'D:\work\project\DL\kesen\data\dataset\dataset\train\data'
 datas = [os.path.join(data_path, a) for a in os.listdir(data_path)]
-events, ts, xs, ys = [],[],[],[]
-for data_ in datas:
-    file = h5py.File(data_,"r") 
-    # e=(x,y,event_g,t)。其中，(x,y)表示触发事件的像素的空间坐标；event_g表示事件绝对灰度值；t表示该事件发生的时间戳。
-    for index, da in enumerate(file['events'].items()):
-        # event_gs, ts, xs, ys
-        for ind, d in enumerate(da):
-            if index == 0 and ind == 1:
-                events.append(d[:])
-            elif index == 1 and ind == 1:
-                ts.append(d[:])
-            elif index == 2 and ind == 1:
-                xs.append(d[:])
-            elif index == 3 and ind == 1:
-                ys.append(d[:])
-    print(len(events), len(ts), len(xs), len(ys))
-    file.close()   
-
-events = np.array(events)
-ts = np.array(ts)
-xs = np.array(xs)
-ys = np.array(ys)
-np.save('./events.npy', events)
-np.save('./ts.npy', ts)
-np.save('./xs.npy', xs)
-np.save('./yx.npy', ys)
-
+for data in datas:
+    basename = os.path.basename(data) # 1.h5
+    # print(basename[:-2]+'jpg')
+    event_gs, t, x, y = read_data(data)
+    image = np.zeros([1300, 800])
+    for i in range(1000000, 1500000):
+        image[x[i], y[i]] += int(event_gs[i]//8)
+        image[x[i], y[i]] = min(image[x[i], y[i]], 255) 
+    # cv2.imshow('', image)
+    # cv2.waitKey(1000)
+    # plt.show(image)
