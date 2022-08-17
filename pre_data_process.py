@@ -46,7 +46,8 @@ if __name__ == "__main__":
     for i in range(1, 27):
         im_name = './{}.jpg'.format(i)
         bm3d(im_name)
-        
+
+
 
 
 

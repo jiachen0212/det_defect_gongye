@@ -355,9 +355,6 @@ def bm3d(img_name):
 
 
 
-
-
-
 # img_dir = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/imgs'
 # ims = os.listdir(img_dir)
 # for im in ims:
@@ -375,19 +372,28 @@ def bm3d(img_name):
 #     cv2.waitKey(1000)
 
 # 均值滤波去噪, 效果不是很好的感觉
-# path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/20.jpg'
-# img = cv2.imread(path)
+path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/train_frames/001_20.jpg'
+img = cv2.imread(path)
 # mean_blur_img = cv2.blur(img, ksize=(5, 5))
-# cv2.imshow('', mean_blur_img)
-# cv2.waitKey(1500)
+median = cv2.medianBlur(img, 3)
+cv2.imshow('', median)
+cv2.waitKey(2500)
 # cv2.imwrite('./20_blur.jpg', mean_blur_img)
 
 
-import random 
-while True:
-    time = random.randint(1,10)
-    if time != 3:
-        print(time)
-    else:
-        print(time, '???')
-        break 
+# import random 
+# while True:
+#     time = random.randint(1,10)
+#     if time != 3:
+#         print(time)
+#     else:
+#         print(time, '???')
+#         break 
+
+
+# img = cv2.imread('./pattern/train/train.jpg')
+# # min_circle = img[315:495,723:903]
+# template = img[315:495, 813:903]
+# # cv2.imshow('', min_circle)
+# # cv2.waitKey(3000)
+# cv2.imwrite('./pattern/train/template.jpg', template)
