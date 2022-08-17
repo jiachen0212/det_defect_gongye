@@ -61,7 +61,7 @@ def video2frames_and_aug2detcircle(video_path, out_dir_path, train_frames):
                         cv2.imwrite(train_im_name, image)
                         if auged_base_name not in frame_circle:
                             frame_circle[auged_base_name] = []
-                        frame_circle[auged_base_name].extend(circles)
+                        frame_circle[auged_base_name].extend(circles.tolist())
             else:
                 print('read video fail')
                 break 
@@ -79,6 +79,6 @@ if __name__ == "__main__":
     out_dir_path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/auged_frames'
     train_frames = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/train_frames'
     frame_circle = video2frames_and_aug2detcircle(video_path, out_dir_path, train_frames)
+    print(frame_circle)
     with open("./video_frames_circle.json", "w") as f:
         f.write(json.dumps(frame_circle, indent=4))
-    
