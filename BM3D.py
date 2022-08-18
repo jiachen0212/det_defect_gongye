@@ -376,9 +376,11 @@ path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/
 img = cv2.imread(path)
 # mean_blur_img = cv2.blur(img, ksize=(5, 5))
 median = cv2.medianBlur(img, 3)
-cv2.imshow('', median)
-cv2.waitKey(2500)
-# cv2.imwrite('./20_blur.jpg', mean_blur_img)
+median1 = cv2.medianBlur(img, 5)
+# cv2.imshow('', median)
+# cv2.waitKey(2500)
+cv2.imwrite('./1.jpg', median)
+cv2.imwrite('./2.jpg', median1)
 
 
 # import random 
