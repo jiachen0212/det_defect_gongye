@@ -30,7 +30,7 @@ for train_im in train_ims:
         x, y, w, h = box[:4]
         center = [(x+w//2)/1280, (y+h//2)/800]
         # 1 0.716797 0.395833 0.216406 0.147222
-        cls_ = ind_cls[img_id[train_im]]
+        cls_ = ind_cls[img_id[train_im]] - 1
         yolo_box = '{} {} {} {} {}\n'.format(cls_, center[0], center[1], w/1280, h/800)
         print(yolo_box)
         f.write(yolo_box)
