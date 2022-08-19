@@ -103,14 +103,16 @@ if __name__ == "__main__":
 
 
     elif flag == 1:
+        temp_dict = {'1':4, '2':6, '3': 4}
         center_json = json.load(open('./train_frames_center.json', 'r'))
         ims = os.listdir('./train_frames_median')
         # 001.h5 test 
-        ims = [a for a in ims if a.split('_')[0] == '001']
-        label = open('./label/001.txt', 'r').readlines()
+        ims = [a for a in ims if a.split('_')[0] == '070']
+        label = open('./label/070.txt', 'r').readlines()
         for lab in label:
             box_lab = [int(a) for a in lab.split(',')]
             box_lab = box_lab[:2] + [-1*box_lab[2]] + box_lab[3:]
+            print(box_lab)
         for im in ims:
             im_path = './train_frames_median/{}'.format(im)
             img = cv2.imread(im_path)
@@ -119,8 +121,10 @@ if __name__ == "__main__":
             except:
                 continue
             center = [a-5 for a in center]
-            p1 = center[0]+box_lab[1]-2, center[1]+box_lab[2]-2
-            p2 = p1[0]+box_lab[3]+2, p1[1]+box_lab[4]+2
+            box_center = center[0]+box_lab[1], center[1]+box_lab[2]
+            # box上下左右放宽些
+            p1 = [box_center[0]-box_lab[3]//2-temp_dict[str(box_lab[0])], box_center[1]-box_lab[4]//2-temp_dict[str(box_lab[0])]]
+            p2 = [box_center[0]+box_lab[3]//2+temp_dict[str(box_lab[0])], box_center[1]+box_lab[4]//2+temp_dict[str(box_lab[0])]]
             cv2.rectangle(img, p1, p2, (0, 0, 255), 1, 8)
             # cv2.circle(img,(center[0],center[1]),1,(0,255,0),2)
             cv2.imwrite('/Users/chenjia/Desktop/1/{}'.format(im), img)
@@ -134,4 +138,3 @@ if __name__ == "__main__":
     # ['3,9,-220,21,21\n', '3,270,-85,78,60'] 090.txt
     # ['2,35,147,240,127\n', '2,283,-124,105,21'] 047.txt
 
-    

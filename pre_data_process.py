@@ -62,6 +62,8 @@ def generate_coco_data_json():
     annotations = []
     images = []
     id_ = 0
+    # 针对类别做box放宽, 比如dian缺陷, center定位不准就导致box内无缺陷. 上下左右放开若干个像素点.
+    temp_dict = {'1':4, '2':6, '3': 4}
     for k, v in center_json.items():
         # k,v: 052_143.jpg [514, 398]
         single_ann = dict()
@@ -80,7 +82,8 @@ def generate_coco_data_json():
             box_lab = videoname_labelinfo[pre_txt]
             single_ann['category_id'] = box_lab[0]
             single_ann['segmentation'] = [0,0]
-            p1 = [v[0]+box_lab[1]-2, v[1]+box_lab[2]-2]
+            box_center = v[0]+box_lab[1], v[1]+box_lab[2]
+            p1 = [box_center[0]-box_lab[3]//2-temp_dict[str(box_lab[0])], box_center[1]-box_lab[4]//2-temp_dict[str(box_lab[0])]]
             single_ann['bbox'] = p1 + box_lab[3:]
             single_ann['iscrowd'] = 0
             single_ann['area'] = int(box_lab[3])*int(box_lab[4])
@@ -110,6 +113,9 @@ if __name__ == "__main__":
     #         video.write(img)
     #     video.release()
 
+    # 生成总的data-coco-json
+    generate_coco_data_json()
+
 
     # split tarin val annotations
     # 按照类别, 分别拆分0.3给到test
@@ -133,6 +139,9 @@ if __name__ == "__main__":
     random.shuffle(cls3_wuzi)
     # 0.3比例划分给val
     all_test = cls1_huahen[:7] + cls2_dian[:13] + cls3_wuzi[:13] 
+    print(cls1_huahen[:7])
+    print(cls2_dian[:13])
+    print(cls3_wuzi[:13])
     # 拆 train val json 
     all_data_js = json.load(open('./train.json', 'r'))
     train_dict = dict()
