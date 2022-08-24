@@ -97,28 +97,21 @@ def generate_coco_data_json():
         f.write(json.dumps(train_0818, indent=4))
 
 
-if __name__ == "__main__":
+def h5_to_video(data_path):
+    data_path = './dataset/train/data'
+    step = 100000
+    hd5s = [os.path.join(data_path, a) for a in os.listdir(data_path)]
+    for hd5 in hd5s:
+        base_name = os.path.basename(hd5)
+        f = h5py.File(hd5, 'r')
+        img_list = hd52img_list(f, step)
+        video = cv2.VideoWriter("./{}.mp4".format(base_name[:-3]), cv2.VideoWriter_fourcc('m','p','4','v'), 10, (1280, 800))
+        for img in img_list:
+            img = cv2.cvtColor(img.astype(np.uint8).transpose(), cv2.COLOR_GRAY2BGR)
+            video.write(img)
+        video.release()
 
-    #1. generate video
-    # data_path = './dataset/train/data'
-    # step = 100000
-    # hd5s = [os.path.join(data_path, a) for a in os.listdir(data_path)]
-    # for hd5 in hd5s:
-    #     base_name = os.path.basename(hd5)
-    #     f = h5py.File(hd5, 'r')
-    #     img_list = hd52img_list(f, step)
-    #     video = cv2.VideoWriter("./{}.mp4".format(base_name[:-3]), cv2.VideoWriter_fourcc('m','p','4','v'), 10, (1280, 800))
-    #     for img in img_list:
-    #         img = cv2.cvtColor(img.astype(np.uint8).transpose(), cv2.COLOR_GRAY2BGR)
-    #         video.write(img)
-    #     video.release()
-
-    # 生成总的data-coco-json
-    generate_coco_data_json()
-
-
-    # split tarin val annotations
-    # 按照类别, 分别拆分0.3给到test
+def split_train_val():
     import random
     cls1_huahen, cls2_dian, cls3_wuzi = [],[],[]
     label_dir = './label'
@@ -181,6 +174,22 @@ if __name__ == "__main__":
 
     with open("./val.json", "w") as f:
         f.write(json.dumps(val_dict, indent=4))
+
+
+if __name__ == "__main__":
+
+    #1. generate video
+    # h5_to_video(data_path)
+
+
+    #2. 生成总的data-coco-json
+    generate_coco_data_json()
+
+    # split tarin val annotations
+    # 按照类别, 分别拆分0.3给到test
+    # split_train_val()
+
+
 
 
     

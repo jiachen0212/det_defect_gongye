@@ -5,14 +5,14 @@ import sys
 import cv2
 import json
 import numpy as np
-cv2.CV_IO_MAX_IMAGE_PIXELS = 200224000
+# cv2.CV_IO_MAX_IMAGE_PIXELS = 200224000
 from PIL import Image
 import numpy as np
 import cv2
-cv2.CV_IO_MAX_IMAGE_PIXELS = 200224000
+# cv2.CV_IO_MAX_IMAGE_PIXELS = 200224000
 from PIL import ImageFile
-Image.MAX_IMAGE_PIXELS = None
-ImageFile.LOAD_TRUNCATED_IMAGES = True
+# Image.MAX_IMAGE_PIXELS = None
+# ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 def train(image, apple_roi, roi):
@@ -124,8 +124,8 @@ def main_fun(train_dir, test_dir=None, roi_vis_path=None, flag=None):
 
 def get_min_apple_pattern(test_path):
 
-    train_dir = './pattern/train'
-    main_fun(train_dir, flag='train')   
+    train_dir = './pattern_org/train'
+    # main_fun(train_dir, flag='train')   
     print('train done.')
 
     # test
@@ -135,8 +135,6 @@ def get_min_apple_pattern(test_path):
     print(img_roi)
 
     return img_roi
-
-
 
 
 if __name__ == '__main__':

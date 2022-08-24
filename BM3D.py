@@ -372,15 +372,17 @@ def bm3d(img_name):
 #     cv2.waitKey(1000)
 
 # 均值滤波去噪, 效果不是很好的感觉
-path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/train_frames/001_20.jpg'
-img = cv2.imread(path)
-# mean_blur_img = cv2.blur(img, ksize=(5, 5))
-median = cv2.medianBlur(img, 3)
-median1 = cv2.medianBlur(img, 5)
-# cv2.imshow('', median)
-# cv2.waitKey(2500)
-cv2.imwrite('./1.jpg', median)
-cv2.imwrite('./2.jpg', median1)
+def Blur():
+    path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/train_frames/001_20.jpg'
+    img = cv2.imread(path)
+    # mean_blur_img = cv2.blur(img, ksize=(5, 5))
+    # 中值滤波
+    median = cv2.medianBlur(img, 3)
+    median1 = cv2.medianBlur(img, 5)
+    # cv2.imshow('', median)
+    # cv2.waitKey(2500)
+    # cv2.imwrite('./1.jpg', median)
+    # cv2.imwrite('./2.jpg', median1)
 
 
 # import random 
@@ -399,3 +401,17 @@ cv2.imwrite('./2.jpg', median1)
 # # cv2.imshow('', min_circle)
 # # cv2.waitKey(3000)
 # cv2.imwrite('./pattern/train/template.jpg', template)
+
+
+def get_multi_defect_videos():
+    multi_defects = open('./multi_defects.txt', 'w')
+    label_dir = './label'
+    lab_txts = os.listdir(label_dir)
+    videoname_labelinfo = dict()
+    for txt in lab_txts:
+        lab_txt_path = os.path.join(label_dir, txt)
+        label_info = open(lab_txt_path, 'r').readlines()
+        if len(label_info) == 2:
+            print(label_info, txt)
+            multi_defects.write(txt[:-4]+',')
+
