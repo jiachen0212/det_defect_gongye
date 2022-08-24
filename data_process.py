@@ -119,7 +119,7 @@ if __name__ == "__main__":
         #2. 先腐蚀再膨胀
         #3. 
         
-    flag = 0
+    flag = 1
     
     if flag == 0:
         video_path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/mp4s'
