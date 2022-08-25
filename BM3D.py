@@ -415,3 +415,14 @@ def get_multi_defect_videos():
             print(label_info, txt)
             multi_defects.write(txt[:-4]+',')
 
+
+
+import random
+random.seed(100)
+a = [1,2,3,4]
+random.shuffle(a)
+print(a)
+random.shuffle(a)
+print(a)
+random.shuffle(a)
+print(a)

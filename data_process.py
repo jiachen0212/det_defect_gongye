@@ -4,6 +4,7 @@ import os
 import json 
 from pattern_find_center import get_min_apple_pattern
 from shutil import copyfile
+from circle_alignment import circle_alin
 
 
 def mkdirs(path):
@@ -77,6 +78,7 @@ def video2frames_and_aug2detcircle(video_path, out_dir_path, train_frames):
 
 
 def show_video_defect_box(video_index, save_dir):
+    # defect box上下左右添加一些荣誉
     temp_dict = {'1':4, '2':6, '3': 4}
     center_json = json.load(open('./train_frames_center.json', 'r'))
     ims = os.listdir('./train_frames_median')
@@ -97,7 +99,8 @@ def show_video_defect_box(video_index, save_dir):
             center = center_json[im] # [0][:2]
         except:
             continue
-        center = [a-5 for a in center]
+        # 圆心-3, 稍做微调, temp_dict也对应做了上下左右宽高补偿.
+        center = [a-3 for a in center]
         for box_lab in box_labs:
             box_center = center[0]+box_lab[1], center[1]+box_lab[2]
             # box上下左右放宽些
@@ -106,6 +109,30 @@ def show_video_defect_box(video_index, save_dir):
             cv2.rectangle(img, p1, p2, (0, 0, 255), 1, 8)
             # cv2.circle(img,(center[0],center[1]),1,(0,255,0),2)
         cv2.imwrite(os.path.join(save_dir, im), img)
+
+
+
+def random_shuffle_0_6_for_train(index):
+    video_ims = dict()
+    train_frames = []
+    train_data = json.load(open("./train.json", "r"))
+    for im_name, center in train_data.items():
+        video_name = im_name[:-4]
+        if video_name not in video_ims:
+            video_ims[video_name] = []
+        video_ims[video_name].append(im_name)
+    assert len(video_ims) == 99
+    for k, v in video_ims.items():
+        # 设置了seed(100), so不同次数运行这个.py,得到的train{1,2,3}.json都是一样的
+        random.shuffle(v)
+        # train_frames, 选择了0.6比例的数据tarin
+        train_frames.extend(v[:int(len(v)*0.6)])
+    train_json = dict()
+    for train_name in train_frames:
+        train_json[train_name] = train_data[train_data]
+    print(len(train_data), len(train_json))
+    with open("./train{}.json".format(index), "w") as f:
+        f.write(json.dumps(train_json, indent=4))
 
 
 if __name__ == "__main__":
@@ -117,22 +144,27 @@ if __name__ == "__main__":
     # img_aug:
         #1. 中值滤波效果不错
         #2. 先腐蚀再膨胀
-        #3. 
+        #3. 0825新的数据处理方式
+        #4. 每个video选择0.6比例的数据train, 可多份数据训多个模型, 然后融合结果.
         
-    flag = 1
+    flag = 4
+    
+    video_path = './mp4s'
+    roi_train_img_dir = './roi_train'
+    auged_frames = './auged_frames_median'
+    org_frames = './train_frames_median'
+    mkdirs(auged_frames)
+    mkdirs(org_frames)
+    mkdirs(roi_train_img_dir)
     
     if flag == 0:
-        video_path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/mp4s'
-        out_dir_path = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/auged_frames_median'
-        mkdirs(out_dir_path)
-        train_frames = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/train_frames_median'
-        mkdirs(train_frames)
         # mp4分帧提取imgs, 然后每帧做霍夫检测圆. 检测圆的目的是: 只有定位到了圆才可能基于圆心话label.
         frame_circle = video2frames_and_aug2detcircle(video_path, out_dir_path, train_frames)
         # with open("./video_frames_circle.json", "w") as f:
         #     f.write(json.dumps(frame_circle, indent=4))
         
-        # 模板匹配得到圆心
+        # 模板匹配得到圆心: 用的中值滤波后的图区匹配,
+        # 也可试试直接用原视频帧匹配? 
         img_center = get_min_apple_pattern(out_dir_path)
         with open("./train_frames_center.json", "w") as f:
             f.write(json.dumps(img_center, indent=4))
@@ -166,3 +198,33 @@ if __name__ == "__main__":
                 copyfile(im, new_path)
                 # os.remove(im)
                 print('copyed {}'.format(new_path))
+
+    elif flag == 3:
+        # 0825新的数据处理代码
+        # 1.霍夫圆检测设置圆的个数<=3上限, 剔除很多无效数据
+        # 2. 检测到圆心后, 扣出roi部分, 剔除无效的可能干扰检测的image冗余部分
+        # 3. roied_img再重新定位圆心, 然后可作为train-data输入网络
+        roi_img_centers = circle_alin(video_path, auged_frames, org_frames, roi_train_img_dir)
+        with open("./train.json", "w") as f:
+            f.write(json.dumps(roi_img_centers, indent=4))
+        
+        # 这样处理后还存在一些fram其实没有明显的defect但被标注了defect. 
+        # train-data融入网络时候, 针对没个.mp4做0.6的随机采样.
+        # 甚至可构造出几批数据, 然后训出不同的几个模型. 
+        # ↓flag==4
+    
+    elif flag == 4:
+        # 对flag3中得到的train.json, 针对每个.mp4做0.6比例筛选, 构造出3份train{1,2,3}.json
+        import random
+        random.seed(100)
+        for index in range(1, 4):
+            random_shuffle_0_6_for_train(index)
+
+    
+
+
+        
+           
+
+
+            

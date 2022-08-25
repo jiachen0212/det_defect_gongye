@@ -81,34 +81,35 @@ def mkdir(save_dir):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-def main_fun(train_dir, test_dir=None, roi_vis_path=None, flag=None):
+def main_fun(train_dir, test_dir=None, roi_vis_path=None, flag=None, train_img_name='train.jpg'):
 
     if flag == 'train':    
-        img = cv2.imread(os.path.join(train_dir, "train.jpg"), 0)
+        img = cv2.imread(os.path.join(train_dir, train_img_name), 0)
         # img1 = img[1200:3625, :]
         apple_roi = cv2.imread(os.path.join(train_dir, "min_circle.jpg"), 0)
         roi = cv2.imread(os.path.join(train_dir, "template.jpg"), 0)
         train_info = train(img, apple_roi, roi)
-        with open(os.path.join(train_dir, "train_info.json"), "w") as f:
+        with open(os.path.join(train_dir, "{}_info.json".format(train_img_name[:-4])), "w") as f:
             json.dump(train_info, f, indent=4)
 
     elif flag == 'test':
         paths = [os.path.join(test_dir, a) for a in os.listdir(test_dir) if '.jpg' in a]
-        with open(os.path.join(train_dir, "train_info.json")) as f:
+        with open(os.path.join(train_dir, "{}_info.json".format(train_img_name[:-4]))) as f:
             train_info = json.load(f)
         roi = cv2.imread(os.path.join(train_dir, "template.jpg"), 0)
         train_info["roi"] = roi
         img_roi = dict()
         for img_path in paths:
             im_name = os.path.basename(img_path)
-            print("find pattern: {}".format(im_name))
+            # print("find pattern: {}".format(im_name))
             # img = cv_imread_by_np(img_path)
             img = cv2.imread(img_path, 0)
             inference_info = inference(img, train_info, verbose='False')
             p1, p2 = inference_info['area_points'][0], inference_info['area_points'][2]
        
             roi = p1 + p2
-            img_roi[im_name] = [(p1[0]+p2[0])//2, (p1[1]+p2[1])//2]  # roi
+            img_roi[im_name] = [(p1[0]+p2[0])//2, (p1[1]+p2[1])//2]  # 保存的是圆心坐标
+            # print([(p1[0]+p2[0])//2, (p1[1]+p2[1])//2])
 
             if roi_vis_path:
                 # cv2.rectangle(img, p1, p2, (255, 255, 255), 10, 8)
@@ -122,29 +123,30 @@ def main_fun(train_dir, test_dir=None, roi_vis_path=None, flag=None):
         return img_roi
 
 
-def get_min_apple_pattern(test_path):
+def get_min_apple_pattern(train_dir, test_path, train_img_name, roi_vis_path=None):
 
-    train_dir = './pattern_org/train'
-    # main_fun(train_dir, flag='train')   
-    print('train done.')
+    # train_dir = './pattern_org/train'
+    main_fun(train_dir, flag='train', train_img_name=train_img_name)   
+    print('train roi done.')
 
     # test
     # test_path = './pattern/test'
     # vis_dir = './pattern/vis_dir'
     img_roi = main_fun(train_dir, test_dir=test_path, flag='test')
-    print(img_roi)
-
+    
     return img_roi
 
 
 if __name__ == '__main__':
 
-    train_dir = './pattern_org/train'
+    # pattern or pattern_org
+
+    train_dir = './pattern/train'
     main_fun(train_dir, flag='train')   
     print('train done.')
 
     # test
-    test_path = './pattern_org/test'
-    vis_dir = './pattern_org/vis_dir'
+    test_path = './pattern/test'
+    vis_dir = './pattern/vis_dir'
     img_roi = main_fun(train_dir, test_dir=test_path, roi_vis_path=vis_dir, flag='test')
     print(img_roi)
