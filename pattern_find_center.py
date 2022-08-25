@@ -81,7 +81,7 @@ def mkdir(save_dir):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-def main_fun(train_dir, test_dir=None, roi_vis_path=None, flag=None, train_img_name='train.jpg'):
+def main_fun(train_dir, test_dir=None, roi_vis_path=None, flag=None, train_img_name=None):
 
     if flag == 'train':    
         img = cv2.imread(os.path.join(train_dir, train_img_name), 0)
@@ -125,14 +125,15 @@ def main_fun(train_dir, test_dir=None, roi_vis_path=None, flag=None, train_img_n
 
 def get_min_apple_pattern(train_dir, test_path, train_img_name, roi_vis_path=None):
 
+    # train好后就别随便开, 这个过程非常耗时.
     # train_dir = './pattern_org/train'
-    main_fun(train_dir, flag='train', train_img_name=train_img_name)   
-    print('train roi done.')
+    # main_fun(train_dir, flag='train', train_img_name=train_img_name)   
+    # print('train roi done.')
 
     # test
     # test_path = './pattern/test'
     # vis_dir = './pattern/vis_dir'
-    img_roi = main_fun(train_dir, test_dir=test_path, flag='test')
+    img_roi = main_fun(train_dir, test_dir=test_path, flag='test', train_img_name=train_img_name))
     
     return img_roi
 
