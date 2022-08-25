@@ -12,6 +12,23 @@ def mkdirs(path):
         os.makedirs(path)
 
 
+def val_video_list():
+    val_videos = []
+    multi_defects = open('./multi_defects_video_list.txt', 'w')
+    label_dir = './label'
+    lab_txts = os.listdir(label_dir)
+    videoname_labelinfo = dict()
+    for txt in lab_txts:
+        lab_txt_path = os.path.join(label_dir, txt)
+        label_info = open(lab_txt_path, 'r').readlines()
+        if len(label_info) == 2:
+            # print(label_info, txt)
+            multi_defects.write(txt[:-4]+',')
+            val_videos.append(txt[:-4])
+
+    return val_videos 
+
+
 def Erode_Dilate(img):
     # img = cv2.imread(img_path)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
@@ -76,42 +93,6 @@ def video2frames_and_aug2detcircle(video_path, out_dir_path, train_frames):
     return frame_circle
 
 
-
-def show_video_defect_box(video_index, save_dir):
-    # defect box上下左右添加一些荣誉
-    temp_dict = {'1':4, '2':6, '3': 4}
-    center_json = json.load(open('./train_frames_center.json', 'r'))
-    ims = os.listdir('./train_frames_median')
-    # 001.h5 test 
-    ims = [a for a in ims if a.split('_')[0] == video_index]
-    label = open('./label/{}.txt'.format(video_index), 'r').readlines()
-    box_labs = []
-    for lab in label:
-        box_lab = [int(a) for a in lab.split(',')]
-        box_lab = box_lab[:2] + [-1*box_lab[2]] + box_lab[3:]
-        box_labs.append(box_lab)
-        print(box_lab)
-    for im in ims:
-        # 中值滤波优化视频帧
-        im_path = './train_frames_median/{}'.format(im)
-        img = cv2.imread(im_path)
-        try:
-            center = center_json[im] # [0][:2]
-        except:
-            continue
-        # 圆心-3, 稍做微调, temp_dict也对应做了上下左右宽高补偿.
-        center = [a-3 for a in center]
-        for box_lab in box_labs:
-            box_center = center[0]+box_lab[1], center[1]+box_lab[2]
-            # box上下左右放宽些
-            p1 = [box_center[0]-box_lab[3]//2-temp_dict[str(box_lab[0])], box_center[1]-box_lab[4]//2-temp_dict[str(box_lab[0])]]
-            p2 = [box_center[0]+box_lab[3]//2+temp_dict[str(box_lab[0])], box_center[1]+box_lab[4]//2+temp_dict[str(box_lab[0])]]
-            cv2.rectangle(img, p1, p2, (0, 0, 255), 1, 8)
-            # cv2.circle(img,(center[0],center[1]),1,(0,255,0),2)
-        cv2.imwrite(os.path.join(save_dir, im), img)
-
-
-
 def random_shuffle_0_6_for_train(index):
     video_ims = dict()
     train_frames = []
@@ -137,17 +118,24 @@ def random_shuffle_0_6_for_train(index):
 
 if __name__ == "__main__":
 
-    # 1. 提取各视频的帧s
-    # 2. aug每一帧, 再用霍夫圆检测得到圆心. or 用模板匹配检测得到圆心. 
-    # 3. 根据圆心和label.txt, 在未aug的原视频帧中定位box
+    '''
+        提取各视频的帧s
+        aug每一帧, 再用霍夫圆检测得到圆心. or 用模板匹配检测得到圆心
+        根据圆心和label.txt, 在未aug的原视频帧中定位box
 
-    # img_aug:
-        #1. 中值滤波效果不错
-        #2. 先腐蚀再膨胀
-        #3. 0825新的数据处理方式
-        #4. 每个video选择0.6比例的数据train, 可多份数据训多个模型, 然后融合结果.
+    '''
+
+
+    #flag0. 中值滤波效果不错 or 先腐蚀再膨胀
+    #flag1. 0825新的数据处理方式
+        '''
+        1. 霍夫圆检测设置圆的个数<=3上限, 剔除很多无效数据
+        2. 检测到圆心后, 扣出roi部分, 剔除无效的可能干扰检测的image冗余部分
+        3. roied_img再重新定位圆心, 然后可作为train-data输入网络
+        '''
+    #flag2. 每个video选择0.6比例的数据train, 可多份数据训多个模型, 然后融合结果.
         
-    flag = 4
+    flag = 2
     
     video_path = './mp4s'
     roi_train_img_dir = './roi_train'
@@ -170,61 +158,30 @@ if __name__ == "__main__":
             f.write(json.dumps(img_center, indent=4))
 
     elif flag == 1:
-        save_dir = './show_video_defect_box'
-        mkdirs(save_dir)
-        muliti_defects = open('./multi_defects.txt', 'r').readlines()[0]
-        muliti_defects_txt = muliti_defects.split(',')[:-1]
-        # print(muliti_defects_txt)
-        # 把所有有两个defect的video的帧都save下来
-        for txt_ in muliti_defects_txt:
-            show_video_defect_box(txt_, save_dir)
-    
-    elif flag == 2:
-        # 写一个python交互工具, 点击键盘一个键就remove or save 当前帧啥的..
-        # 这个后续也可以用在清洗train data上, 有些时序帧上没有明显缺陷但给了box label
-        
-        save_dir = './show_video_defect_box'
-        clear_val_imgs = './clear_val_imgs'
-        mkdirs(clear_val_imgs)
-        ims = [os.path.join(save_dir, a) for a in os.listdir(save_dir)]
-        for im in ims:
-            image = cv2.imread(im)
-            cv2.imshow('', image)
-            if 0xFF == ord('q'):
-                continue
-            # 按键 'b', 表示保存这张img作为 clear image
-            elif cv2.waitKey(2500) & 0xFF == ord('b'):
-                new_path = './clear_val_imgs/{}'.format(os.path.basename(im))
-                copyfile(im, new_path)
-                # os.remove(im)
-                print('copyed {}'.format(new_path))
-
-    elif flag == 3:
-        # 0825新的数据处理代码
-        # 1.霍夫圆检测设置圆的个数<=3上限, 剔除很多无效数据
-        # 2. 检测到圆心后, 扣出roi部分, 剔除无效的可能干扰检测的image冗余部分
-        # 3. roied_img再重新定位圆心, 然后可作为train-data输入网络
         roi_img_centers = circle_alin(video_path, auged_frames, org_frames, roi_train_img_dir)
+        val_videos = val_video_list()
+        val_dict = dict()
+        im_names = list(roi_img_centers.keys())
+        for im_name in im_names:
+            if im_name[:-4] in val_videos:
+                val_dict[im_name] = roi_img_centers[im_name]
+                del roi_img_centers[im_name]
+        with open("./val.json", "w") as f:
+            f.write(json.dumps(val_dict, indent=4))
         with open("./train.json", "w") as f:
             f.write(json.dumps(roi_img_centers, indent=4))
-        
-        # 这样处理后还存在一些fram其实没有明显的defect但被标注了defect. 
-        # train-data融入网络时候, 针对没个.mp4做0.6的随机采样.
+
+        # 这样处理后还存在一些frame其实没有明显的defect但被标注了defect. 
+        # train-data融入网络时候, 针对每个train.mp4做0.6随机采样.
         # 甚至可构造出几批数据, 然后训出不同的几个模型. 
-        # ↓flag==4
-    
-    elif flag == 4:
-        # 对flag3中得到的train.json, 针对每个.mp4做0.6比例筛选, 构造出3份train{1,2,3}.json
+        # ↓flag==2
+
+    elif flag == 2:
+        # 对flag3中得到的train.json, 针对每个.mp4做0.6比例筛选
+        # 构造出3份train{1,2,3}.json
         import random
         random.seed(100)
         for index in range(1, 4):
             random_shuffle_0_6_for_train(index)
-
-    
-
-
+         
         
-           
-
-
-            

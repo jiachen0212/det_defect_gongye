@@ -109,8 +109,8 @@ def aline_img_roi(img_centers, org_frames, roi_train_img_dir):
 
 def circle_alin(video_path, auged_frames, org_frames, roi_train_img_dir):
     # video_path, video_name = '/Users/chenjia/Downloads/Smartmore/2022/比赛-工业表面缺陷检测/mp4s', '001.mp4'
-    # auged_frames = './1'
-    # org_frames = './2'
+    # auged_frames = ''
+    # org_frames = ''
     # roi_train_img_dir = './roi_train_img_dir'
 
     video_paths = [os.path.join(video_path, a) for a in os.listdir(video_path)]

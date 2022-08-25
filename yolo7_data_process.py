@@ -1,12 +1,25 @@
 # coding=utf-8
+
+'''
+data_process.py中处理得到了coco_train_{}.json, coco_val.json
+然后在这个脚本转换成yolo7需要的: label/train/im_name.txt, label/val/im_name.txt
+
+'''
+
+
 import json
 import os
 
-def generate_yolo7_label_txts(flag):
+def generate_yolo7_label_txts(flag, train_index=None):
+
+    # train_img, val_img 都是全量的
     train_img = '/newdata/jiachen/data/det/dataset/median_gy_data/images/{}'.format(flag)
     train_ims = os.listdir(train_img)
 
-    train_js = json.load(open('/newdata/jiachen/data/det/dataset/median_gy_data/annotations/{}.json'.format(flag), 'r'))
+    if flag == 'train':
+        train_js = json.load(open('/newdata/jiachen/data/det/dataset/median_gy_data/annotations/coco_{}_{}.json'.format(flag, train_index), 'r'))
+    else:
+        train_js = json.load(open('/newdata/jiachen/data/det/dataset/median_gy_data/annotations/coco_{}.json'.format(flag), 'r'))
 
     # dict_keys(['info', 'license', 'categories', 'annotations', 'images'])
     trains = train_js['images']
@@ -23,7 +36,7 @@ def generate_yolo7_label_txts(flag):
 
 
     for train_im in train_ims:
-        f = open('/newdata/jiachen/data/det/dataset/median_gy_data/labels/train/{}.txt'.format(train_im.split('.')[0]), 'w')
+        f = open('/newdata/jiachen/data/det/dataset/median_gy_data/labels/{}/{}.txt'.format(flag, train_im.split('.')[0]), 'w')
         try:
             box = ind_ann[img_id[train_im]]
             x, y, w, h = box[:4]
@@ -40,6 +53,10 @@ def generate_yolo7_label_txts(flag):
 
 if __name__ == '__main__':
 
-    # generate_yolo7_label_txts('train')
-    # generate_yolo7_label_txts('val')
-    pass 
+    # train-yolo7
+    for i in range(1, 4):
+        generate_yolo7_label_txts('train', train_index=i))
+    
+    # val-yolo7
+    generate_yolo7_label_txts('val')
+    

@@ -402,27 +402,12 @@ def Blur():
 # # cv2.waitKey(3000)
 # cv2.imwrite('./pattern/train/template.jpg', template)
 
-
-def get_multi_defect_videos():
-    multi_defects = open('./multi_defects.txt', 'w')
-    label_dir = './label'
-    lab_txts = os.listdir(label_dir)
-    videoname_labelinfo = dict()
-    for txt in lab_txts:
-        lab_txt_path = os.path.join(label_dir, txt)
-        label_info = open(lab_txt_path, 'r').readlines()
-        if len(label_info) == 2:
-            print(label_info, txt)
-            multi_defects.write(txt[:-4]+',')
-
-
-
-import random
-random.seed(100)
-a = [1,2,3,4]
-random.shuffle(a)
-print(a)
-random.shuffle(a)
-print(a)
-random.shuffle(a)
-print(a)
+# import random
+# random.seed(100)
+# a = [1,2,3,4]
+# random.shuffle(a)
+# print(a)
+# random.shuffle(a)
+# print(a)
+# random.shuffle(a)
+# print(a)
