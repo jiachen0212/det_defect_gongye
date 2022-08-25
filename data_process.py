@@ -124,18 +124,15 @@ if __name__ == "__main__":
         根据圆心和label.txt, 在未aug的原视频帧中定位box
 
     '''
-
-
+    
     #flag0. 中值滤波效果不错 or 先腐蚀再膨胀
     #flag1. 0825新的数据处理方式
-        '''
-        1. 霍夫圆检测设置圆的个数<=3上限, 剔除很多无效数据
-        2. 检测到圆心后, 扣出roi部分, 剔除无效的可能干扰检测的image冗余部分
-        3. roied_img再重新定位圆心, 然后可作为train-data输入网络
-        '''
+        # 1. 霍夫圆检测设置圆的个数<=3上限, 剔除很多无效数据
+        # 2. 检测到圆心后, 扣出roi部分, 剔除无效的可能干扰检测的image冗余部分
+        # 3. roied_img再重新定位圆心, 然后可作为train-data输入网络
     #flag2. 每个video选择0.6比例的数据train, 可多份数据训多个模型, 然后融合结果.
-        
-    flag = 2
+
+    flag = 1
     
     video_path = './mp4s'
     roi_train_img_dir = './roi_train'

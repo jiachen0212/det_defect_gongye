@@ -133,7 +133,7 @@ def get_min_apple_pattern(train_dir, test_path, train_img_name, roi_vis_path=Non
     # test
     # test_path = './pattern/test'
     # vis_dir = './pattern/vis_dir'
-    img_roi = main_fun(train_dir, test_dir=test_path, flag='test', train_img_name=train_img_name))
+    img_roi = main_fun(train_dir, test_dir=test_path, flag='test', train_img_name=train_img_name)
     
     return img_roi
 
