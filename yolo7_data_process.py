@@ -60,9 +60,17 @@ def generate_yolo7_label_txts(flag, train_index=None):
 if __name__ == '__main__':
 
     # train-yolo7
-    for i in range(1, 4):
-        generate_yolo7_label_txts('train', train_index=i)
+    # for i in range(1, 4):
+    #     generate_yolo7_label_txts('train', train_index=i)
     
-    # val-yolo7
-    generate_yolo7_label_txts('val')
+    # # val-yolo7
+    # generate_yolo7_label_txts('val')
+
+    # for index in range(1, 4):
+    #     f = open('/newdata/jiachen/data/det/dataset/median_gy_data/train{}.txt'.format(index), 'w')
+    #     im_names = [a[:-3]+'jpg' for a in os.listdir('/newdata/jiachen/data/det/dataset/median_gy_data/labels/train{}'.format(index))]
+    #     for im in im_names:
+    #         f.write('/newdata/jiachen/data/det/dataset/median_gy_data/images/train/{}\n'.format(im))
+
+    pass 
 
