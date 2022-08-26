@@ -114,19 +114,18 @@ def circle_alin(video_path, auged_frames, org_frames, roi_train_img_dir):
     # roi_train_img_dir = './roi_train_img_dir'
 
     video_paths = [os.path.join(video_path, a) for a in os.listdir(video_path)]
+    #1. video拆分成frames, median_blur_aug后做霍夫圆检测.  
     for video_path in video_paths:
-
-        #1. video拆分成frames, median_blur_aug后做霍夫圆检测.  
         video_2_frams(video_path, auged_frames, org_frames, True)
 
-        #2. org_frame 做模板匹配定位出小圆心.
-        img_centers = get_min_apple_pattern('./pattern/train', org_frames, 'train.jpg')
-    
-        #3. 根据原心坐标, 对齐矫正物料圆: 其实就是扣出整个物料圆的矩形img, 物料圆的半径是375. 根据扣出的rio_img大小, 可以剔除一些定位不准的物料, 直接丢弃.
-        aline_img_roi(img_centers, org_frames, roi_train_img_dir)
+    #2. org_frame 做模板匹配定位出小圆心.
+    img_centers = get_min_apple_pattern('./pattern/train', org_frames, 'train.jpg')
 
-        # 重新定位roi_img的圆心
-        roi_img_centers = get_min_apple_pattern('./pattern/train', roi_train_img_dir, 'train_roi.jpg')
+    #3. 根据原心坐标, 对齐矫正物料圆: 其实就是扣出整个物料圆的矩形img, 物料圆的半径是375. 根据扣出的rio_img大小, 可以剔除一些定位不准的物料, 直接丢弃.
+    aline_img_roi(img_centers, org_frames, roi_train_img_dir)
+
+    # 重新定位roi_img的圆心
+    roi_img_centers = get_min_apple_pattern('./pattern/train', roi_train_img_dir, 'train_roi.jpg')
 
     return roi_img_centers
 
