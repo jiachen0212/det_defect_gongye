@@ -98,11 +98,10 @@ def random_shuffle_0_6_for_train(index):
     train_frames = []
     train_data = json.load(open("./train.json", "r"))
     for im_name, center in train_data.items():
-        video_name = im_name[:-4]
+        video_name = im_name.split('_')[0]
         if video_name not in video_ims:
             video_ims[video_name] = []
         video_ims[video_name].append(im_name)
-    assert len(video_ims) == 99
     for k, v in video_ims.items():
         # 设置了seed(100), so不同次数运行这个.py,得到的train{1,2,3}.json都是一样的
         random.shuffle(v)
@@ -110,7 +109,7 @@ def random_shuffle_0_6_for_train(index):
         train_frames.extend(v[:int(len(v)*0.6)])
     train_json = dict()
     for train_name in train_frames:
-        train_json[train_name] = train_data[train_data]
+        train_json[train_name] = train_data[train_name]
     print(len(train_data), len(train_json))
     with open("./train{}.json".format(index), "w") as f:
         f.write(json.dumps(train_json, indent=4))
@@ -132,7 +131,7 @@ if __name__ == "__main__":
         # 3. roied_img再重新定位圆心, 然后可作为train-data输入网络
     #flag2. 每个video选择0.6比例的数据train, 可多份数据训多个模型, 然后融合结果.
 
-    flag = 1
+    flag = 2
     
     video_path = './mp4s'
     roi_train_img_dir = './roi_train'
@@ -160,7 +159,7 @@ if __name__ == "__main__":
         val_dict = dict()
         im_names = list(roi_img_centers.keys())
         for im_name in im_names:
-            if im_name[:-4].split('_')[0] in val_videos:
+            if im_name.split('_')[0] in val_videos:
                 val_dict[im_name] = roi_img_centers[im_name]
                 del roi_img_centers[im_name]
         with open("./val.json", "w") as f:
