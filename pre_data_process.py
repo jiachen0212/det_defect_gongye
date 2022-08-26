@@ -89,7 +89,7 @@ def generate_coco_train_json(train_index):
             videoname_labelinfo[txt[:-4]] = box_lab
 
     # train_index_json: train{1,2,3}.json
-    center_json = json.load(open('./train{}'.format(train_index), 'r'))
+    center_json = json.load(open('./train{}.json'.format(train_index), 'r'))
     annotations = []
     images = []
     id_ = 0
@@ -272,9 +272,8 @@ def generate_coco_val_json():
             pass 
     val_0825['annotations'] = annotations
     val_0825['images'] = images
-    with open("./coco_val.json".format(train_index), "w") as f:
+    with open("./coco_val.json", "w") as f:
         f.write(json.dumps(val_0825, indent=4))
-
 
 
 def show_video_defect_box(video_index, save_dir, center_json):
