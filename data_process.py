@@ -124,7 +124,7 @@ if __name__ == "__main__":
         根据圆心和label.txt, 在未aug的原视频帧中定位box
 
     '''
-    
+
     #flag0. 中值滤波效果不错 or 先腐蚀再膨胀
     #flag1. 0825新的数据处理方式
         # 1. 霍夫圆检测设置圆的个数<=3上限, 剔除很多无效数据
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         val_dict = dict()
         im_names = list(roi_img_centers.keys())
         for im_name in im_names:
-            if im_name[:-4] in val_videos:
+            if im_name[:-4].split('_')[0] in val_videos:
                 val_dict[im_name] = roi_img_centers[im_name]
                 del roi_img_centers[im_name]
         with open("./val.json", "w") as f:
