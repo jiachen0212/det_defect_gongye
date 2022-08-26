@@ -12,40 +12,46 @@ import os
 
 def generate_yolo7_label_txts(flag, train_index=None):
 
-    # train_img, val_img 都是全量的
-    train_img = '/newdata/jiachen/data/det/dataset/median_gy_data/images/{}'.format(flag)
-    train_ims = os.listdir(train_img)
+    # images都全部放在train下.
+    train_img = '/newdata/jiachen/data/det/dataset/median_gy_data/images/train'
 
     if flag == 'train':
         train_js = json.load(open('/newdata/jiachen/data/det/dataset/median_gy_data/annotations/coco_{}_{}.json'.format(flag, train_index), 'r'))
     else:
         train_js = json.load(open('/newdata/jiachen/data/det/dataset/median_gy_data/annotations/coco_{}.json'.format(flag), 'r'))
 
+    train_ims = [a['file_name'] for a in train_js['images']]
     # dict_keys(['info', 'license', 'categories', 'annotations', 'images'])
     trains = train_js['images']
     anns = train_js['annotations']
-    img_id = dict()
-    for ind, tr in enumerate(trains):
-        img_id[tr['file_name']] = str(ind) 
-
-    ind_ann = dict()
-    ind_cls = dict()
-    for ind, ann in enumerate(anns):
-        ind_ann[str(ind)] = ann['bbox']
-        ind_cls[str(ind)] = ann['category_id']
-
-
+    imname_imid = dict()
+    for tr in trains:
+        imname_imid[tr['file_name']] = tr['id']
+    
+    imid_ann = dict()
+    imid_cls = dict()
+    for ann_dict in anns:
+        image_id = str(ann_dict['image_id'])
+        if image_id not in imid_ann:
+            imid_ann[image_id] = []
+            imid_cls[image_id] = []
+        imid_ann[image_id].append(ann_dict['bbox'])
+        imid_cls[image_id].append(ann_dict['category_id'])
     for train_im in train_ims:
-        f = open('/newdata/jiachen/data/det/dataset/median_gy_data/labels/{}/{}.txt'.format(flag, train_im.split('.')[0]), 'w')
+        if train_index:
+            f = open('/newdata/jiachen/data/det/dataset/median_gy_data/labels/{}{}/{}.txt'.format(flag, train_index, train_im.split('.')[0]), 'w')
+        else:
+            f = open('/newdata/jiachen/data/det/dataset/median_gy_data/labels/{}/{}.txt'.format(flag, train_im.split('.')[0]), 'w')
         try:
-            box = ind_ann[img_id[train_im]]
-            x, y, w, h = box[:4]
-            center = [(x+w//2)/1280, (y+h//2)/800]
-            # 1 0.716797 0.395833 0.216406 0.147222
-            cls_ = ind_cls[img_id[train_im]]-1
-            yolo_box = '{} {} {} {} {}\n'.format(cls_-1, center[0], center[1], w/1280, h/800)
-            print(yolo_box)
-            f.write(yolo_box)
+            img_id = str(imname_imid[train_im])
+            boxs = imid_ann[img_id]
+            clss = imid_cls[img_id]
+            for k in range(len(clss)):
+                x, y, w, h = boxs[k][:4]
+                center = [(x+w//2)/1280, (y+h//2)/800]
+                cls_ = clss[k]-1
+                yolo_box = '{} {} {} {} {}\n'.format(cls_, center[0], center[1], w/1280, h/800)
+                f.write(yolo_box)
             f.close()
         except:
             continue
@@ -55,8 +61,8 @@ if __name__ == '__main__':
 
     # train-yolo7
     for i in range(1, 4):
-        generate_yolo7_label_txts('train', train_index=i))
+        generate_yolo7_label_txts('train', train_index=i)
     
     # val-yolo7
     generate_yolo7_label_txts('val')
-    
+

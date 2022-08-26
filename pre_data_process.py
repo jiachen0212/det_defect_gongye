@@ -235,7 +235,7 @@ def generate_coco_val_json():
                 box_lab = box_lab[:2] + [-1*box_lab[2]] + box_lab[3:]
                 box_labs.append(box_lab)
             videoname_labelinfo[txt[:-4]] = box_labs
-
+    
     center_json = json.load(open('./val.json', 'r'))
     annotations = []
     images = []
@@ -244,21 +244,22 @@ def generate_coco_val_json():
     temp_dict = {'1':4, '2':6, '3': 4}
     for k, v in center_json.items():
         # k,v: 052_143.jpg [514, 398]
-        single_ann = dict()
+        
         sigle_img = dict()
         image_id = imgname_imid[k]
-        single_ann['image_id'] = image_id
+        
         sigle_img['id'] = image_id
         sigle_img['file_name'] = k 
         sigle_img['height'] = 800
         sigle_img['width'] = 1280
-        single_ann['id'] = id_
-        id_ += 1
+        images.append(sigle_img)
         pre_txt = k.split('_')[0]
         try:
             # 使用lab_box信息 
             box_labs = videoname_labelinfo[pre_txt]
+      
             for box_lab in box_labs:
+                single_ann = dict()
                 single_ann['category_id'] = box_lab[0]
                 single_ann['segmentation'] = [0,0]
                 box_center = v[0]+box_lab[1], v[1]+box_lab[2]
@@ -266,10 +267,13 @@ def generate_coco_val_json():
                 single_ann['bbox'] = p1 + box_lab[3:]
                 single_ann['iscrowd'] = 0
                 single_ann['area'] = int(box_lab[3])*int(box_lab[4])
+                single_ann['id'] = id_
+                single_ann['image_id'] = image_id
+                id_ += 1
                 annotations.append(single_ann)
-                images.append(sigle_img)
         except:
             pass 
+        
     val_0825['annotations'] = annotations
     val_0825['images'] = images
     with open("./coco_val.json", "w") as f:
